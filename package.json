@@ -4,7 +4,7 @@
   "description": "replace text in text nodes",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
-  "repository": "",
+  "repository": "https://github.com/amdwit/replace-xml-text",
   "scripts": {
     "test": "jest --config jestconfig.json",
     "build": "tsc",
