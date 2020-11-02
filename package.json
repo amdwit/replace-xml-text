@@ -8,6 +8,13 @@
   "scripts": {
     "test": "jest --config jestconfig.json",
     "build": "tsc",
+    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "lint": "eslint",
+    "prepare": "npm run build",
+    "prepublishOnly": "npm test && npm run lint",
+    "preversion": "npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags",
     "publishToNpm": "npm version patch;npm publish;"
   },
   "keywords": [],
@@ -25,6 +32,8 @@
   "dependencies": {
     "domhandler": "^3.3.0",
     "domutils": "^2.4.2",
-    "htmlparser2": "^5.0.1"
+    "eslint": "^7.12.1",
+    "htmlparser2": "^5.0.1",
+    "prettier": "^2.1.2"
   }
 }
