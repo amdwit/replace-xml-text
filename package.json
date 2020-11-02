@@ -1,6 +1,6 @@
 {
   "name": "replace-xml-text",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "replace text in text nodes",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -8,7 +8,7 @@
   "scripts": {
     "test": "jest --config jestconfig.json",
     "build": "tsc",
-    "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint",
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",

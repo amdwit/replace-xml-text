@@ -1,6 +1,6 @@
-import * as assert from 'assert';
-import * as domhandler from 'domhandler/lib';
-import * as domutils from 'domutils/lib';
+import * as assert from "assert";
+import * as domhandler from "domhandler/lib";
+import * as domutils from "domutils/lib";
 
 interface Replacement {
   skip: number;
@@ -11,12 +11,13 @@ interface Replacement {
 interface ReplaceState {
   replacementIndex: number;
   skip: number | null;
-  toDelete: number
+  toDelete: number;
 }
 
-function processReplacementsOnTextNode(replacements: Replacement[],
-                                       state: ReplaceState,
-                                       textNode: domhandler.Text,
+function processReplacementsOnTextNode(
+  replacements: Replacement[],
+  state: ReplaceState,
+  textNode: domhandler.Text
 ): ReplaceState | null {
   let current = state;
   let textIndex = 0;
@@ -39,7 +40,7 @@ function processReplacementsOnTextNode(replacements: Replacement[],
       const pre = textNode.data.slice(0, textIndex);
       const toDelete = Math.min(
         textNode.data.length - pre.length,
-        current.toDelete,
+        current.toDelete
       );
       const post = textNode.data.slice(textIndex + toDelete);
       textNode.data = pre + post;
@@ -62,17 +63,21 @@ function processReplacementsOnTextNode(replacements: Replacement[],
 function processReplacements(
   replacements: Replacement[],
   state: ReplaceState,
-  nodes: domhandler.Node[],
+  nodes: domhandler.Node[]
 ): ReplaceState | null {
-  let current:ReplaceState|null = state;
+  let current: ReplaceState | null = state;
   for (const node of nodes) {
-    if (node.type === 'text') {
-      current = processReplacementsOnTextNode(replacements, current, node as domhandler.Text);
-    } else if ('children' in node) {
+    if (node.type === "text") {
+      current = processReplacementsOnTextNode(
+        replacements,
+        current,
+        node as domhandler.Text
+      );
+    } else if ("children" in node) {
       current = processReplacements(
         replacements,
         current,
-        (node as domhandler.NodeWithChildren).children,
+        (node as domhandler.NodeWithChildren).children
       );
     }
     if (!current) {
@@ -82,56 +87,63 @@ function processReplacements(
   return current;
 }
 
-function escapeRegExp(s:string) {
-  return s.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
+function escapeRegExp(s: string) {
+  return s.replace(/[.*+\-?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
 }
 
 export function replace(
   nodeOrNodes: domhandler.Node | domhandler.Node[],
   needle: RegExp | string,
-  processMatch:
-    | string
-    | ((...args:any[]) => string | Replacement[]),
+  processMatch: string | ((...args: any[]) => string | Replacement[])
 ): void {
-  const xml: domhandler.Node[] = Array.isArray(nodeOrNodes) ? nodeOrNodes : [nodeOrNodes];
+  const xml: domhandler.Node[] = Array.isArray(nodeOrNodes)
+    ? nodeOrNodes
+    : [nodeOrNodes];
   const text = domutils.getText(xml);
   const replacements: Replacement[] = [];
 
-  const needleRE=typeof needle==='string'?RegExp(escapeRegExp(needle)):needle
+  const needleRE =
+    typeof needle === "string" ? RegExp(escapeRegExp(needle)) : needle;
 
   let lastIndex = 0;
-  let match
-  while(match=needleRE.exec(text)){
-    const substring=match[0]
-    const offset=match.index
-    const skip=offset-lastIndex
-    const toDelete=substring.length
-    lastIndex=offset+toDelete
+  let match;
+  while ((match = needleRE.exec(text))) {
+    const substring = match[0];
+    const offset = match.index;
+    const skip = offset - lastIndex;
+    const toDelete = substring.length;
+    lastIndex = offset + toDelete;
     const replacementsOrString =
-      typeof processMatch === 'string'
+      typeof processMatch === "string"
         ? processMatch
-        : processMatch(...match,match.index,match.input,match.groups);
-    if (typeof replacementsOrString === 'string') {
+        : processMatch(...match, match.index, match.input, match.groups);
+    if (typeof replacementsOrString === "string") {
       replacements.push({ skip, text: replacementsOrString, toDelete });
     } else {
-      replacements.push({ skip, text: '', toDelete: 0 });
+      replacements.push({ skip, text: "", toDelete: 0 });
       if (replacementsOrString.length) {
-        const toDelete2 = replacementsOrString.reduce((acc, r) => acc + r.skip + r.toDelete, 0);
+        const toDelete2 = replacementsOrString.reduce(
+          (acc, r) => acc + r.skip + r.toDelete,
+          0
+        );
         assert.ok(toDelete === toDelete2);
         replacements.push(...replacementsOrString);
       }
     }
-    if(!needleRE.global){
-      break
+    if (!needleRE.global) {
+      break;
     }
   }
 
   if (replacements.length) {
-    processReplacements(replacements, {
-      replacementIndex: 0,
-      toDelete: replacements[0].toDelete,
-      skip: replacements[0].skip,
-    }, xml);
+    processReplacements(
+      replacements,
+      {
+        replacementIndex: 0,
+        toDelete: replacements[0].toDelete,
+        skip: replacements[0].skip,
+      },
+      xml
+    );
   }
 }
-
